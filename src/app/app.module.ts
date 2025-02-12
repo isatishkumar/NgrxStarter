@@ -1,24 +1,30 @@
-import {NgModule} from '@angular/core';
-import {BrowserModule} from '@angular/platform-browser';
-import {ReactiveFormsModule} from '@angular/forms';
-import {AppComponent} from './app.component';
-import {StoreModule} from "@ngrx/store";
-import {EffectsModule} from "@ngrx/effects";
-import {HomeModule} from "./home/home.module";
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { EffectsModule } from "@ngrx/effects";
+import { StoreModule } from "@ngrx/store";
+import { AppComponent } from './app.component';
+import { HomeModule } from "./home/home.module";
+import { UserEffects } from './store/user.effects';
+import { UserReducer } from './store/user.reducer';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   imports: [
     BrowserModule,
-    ReactiveFormsModule,
-    StoreModule.forRoot([]),
-    EffectsModule.forRoot([]),
-    HomeModule
+    StoreModule.forRoot({ user: UserReducer }),
+    EffectsModule.forRoot([UserEffects]),
+    HomeModule,
+    HttpClientModule
   ],
   declarations: [
     AppComponent
   ],
   bootstrap: [
     AppComponent
+  ],
+  providers: [
+    provideAnimationsAsync()
   ]
 })
 export class AppModule { }

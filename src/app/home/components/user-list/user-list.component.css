@@ -1,0 +1,13 @@
+.editing-row {
+    background: rgba(0, 0, 0, 0.04);
+  }
+  .mat-column-actions {
+    width: 100px;
+    text-align: center;
+  }
+  .filter-field{
+    width: 100%;
+  }
+  .main-container{
+    margin: 2rem;
+  }
