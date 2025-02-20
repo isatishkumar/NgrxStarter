@@ -1,5 +1,5 @@
 import {  Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSort, Sort } from '@angular/material/sort';
 import { Store } from '@ngrx/store';
@@ -8,6 +8,7 @@ import { TableState } from '../../../models/table-state.model';
 import { User } from '../../../models/user.model';
 import * as UserActions from "../../../store/user.actions";
 import { UserState } from '../../../store/user.state';
+import { selectAllusers, selectLoading, selectTotalUsers } from '../../../store/user.selector';
 
 @Component({
   selector: 'app-user-list',
@@ -21,9 +22,11 @@ export class UserListComponent implements OnInit, OnDestroy {
   displayedColumns:string[] = ['id','name','username','email','actions'];
   filterControl = new FormControl('');
   editForm!:FormGroup;
+  editFormGroup!:FormGroup;
 
   private editingUserIdSubject = new BehaviorSubject<number|null>(null);
   editingUserId$ = this.editingUserIdSubject.asObservable();
+  editingBulkuser = false;
 
   private tableStateSubject = new BehaviorSubject<TableState>({
     pageIndex:0,
@@ -33,20 +36,22 @@ export class UserListComponent implements OnInit, OnDestroy {
     filterValue:''
   })
 
+
+
   //selectros 
-  user$ = this.store.select(state=>state.user.users);
-  loading$ = this.store.select(state => state.user.loading);
-  error$ = this.store.select(state => state.user.error);
+  user$ = this.store.select(selectAllusers);
+  loading$ = this.store.select(selectLoading);
+  error$ = this.store.select(selectLoading);
 
   //Derived stream
-  totalUser$ = this.user$.pipe(map(users=>users.length));
+  totalUser$ = this.store.select(selectTotalUsers);
 
   displayedUser$ = combineLatest([
     this.user$,
     this.tableStateSubject,
     this.filterControl.valueChanges.pipe(startWith(''),distinctUntilChanged(),debounceTime(300))]).pipe(
       map(([users, state,filterValue])=>{
-       if(!users.length) return [];
+       if(!users?.length) return [];
         let filtered = this.filterUsers(users, filterValue || '');
         let sorted = this.sortUsers(filtered,state);
         return this.paginateUsers(sorted,state);
@@ -61,6 +66,7 @@ export class UserListComponent implements OnInit, OnDestroy {
   constructor(private store:Store<{user:UserState}>, private fb:FormBuilder){ }
 
   ngOnInit(): void {
+    this.store.select(selectAllusers).subscribe(e=>console.log(e))
     this.initForm();
     this.store.dispatch(UserActions.loadUsers());
     this.setupFilterListener()
@@ -113,6 +119,28 @@ export class UserListComponent implements OnInit, OnDestroy {
     });
   }
 
+  startEditAll(){
+    this.editingBulkuser = true;
+    this.editFormGroup = this.fb.group({});
+    this.user$.pipe(takeUntil(this.destory$)).subscribe(users=>{
+    users.forEach(user=>{ this.editFormGroup.addControl(user.id.toString() , this.fb.group({
+      name:[user.name,Validators.required],
+      username: [user.username,Validators.required],
+      email: [user.email,[Validators.required,Validators.email]]
+    }))})
+    })
+
+  }
+
+  getFormGroupById(id:number):FormGroup{
+    console.log( this.editFormGroup.get(id+''))
+    return this.editFormGroup.controls['length'] ? this.editFormGroup.get(id+'') as FormGroup : this.fb.group({
+      name:['',Validators.required],
+      username: ['',Validators.required],
+      email: ['',[Validators.required,Validators.email]]
+    })
+  }
+  saveAll(){}
   private initForm():void{
     this.editForm = this.fb.group({
       name:['',Validators.required],

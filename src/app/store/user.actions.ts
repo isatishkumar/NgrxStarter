@@ -1,5 +1,6 @@
 import { createAction, props } from "@ngrx/store";
 import { User } from "../models/user.model";
+import { Update } from "@ngrx/entity";
 
 export const loadUsers = createAction('[User] Load Users');
 
@@ -27,4 +28,7 @@ export const updateUserFailure = createAction(
     '[User] Update User Failure',
     props<{error:string}>()
 )
+
+export const udpateBulkUser = createAction('[User] Update Bulk',props<{users:Update<User>[]}>())
+
 

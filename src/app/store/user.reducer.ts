@@ -1,13 +1,28 @@
 import { createReducer, on } from "@ngrx/store";
 import { UserState } from "./user.state";
 import  * as UserActions  from "./user.actions";
+import { createEntityAdapter, EntityAdapter, EntityState } from "@ngrx/entity";
+import { User } from "../models/user.model";
+import { state } from "@angular/animations";
 
-export const initialState:UserState ={
-    users:[],
-    loading:false,
-    error:null,
-    selectedUser:null
+// export const initialState:UserState ={
+//     users:[],
+//     loading:false,
+//     error:null,
+//     selectedUser:null
+// }
+
+export interface userState extends EntityState<User>{
+    loading:boolean;
+    error:string  | null;
 }
+
+export const userAdaptor:EntityAdapter<User> = createEntityAdapter<User>();
+
+export const initialState:userState = userAdaptor.getInitialState({
+    loading:true,
+    error:null
+});
 
 export const UserReducer = createReducer(
     initialState,
@@ -15,20 +30,16 @@ export const UserReducer = createReducer(
         ...state,
         loading:true
     })),
-    on(UserActions.loadUserSuccess, (state, {users})=>({
-        ...state,
-        loading:false,
-        users,
-        error:null
-    })),
+    on(UserActions.loadUserSuccess, (state, {users})=>{
+        return ( userAdaptor.setAll(users, {...state,loading:false}))}
+
+),
     on(UserActions.loadUserFailure,(state,{error})=>({
         ...state,
         error,
         loading:false
     })),
-    on(UserActions.updateUserSuccess,(state,{user})=>({
-        ...state,
-        users:state.users.map(u=> u.id === user.id ? user : u),
-        error:null
-    }))
+    on(UserActions.updateUserSuccess,(state,{user})=>(userAdaptor.updateOne({id:user.id, changes:user},state))),
+    on(UserActions.udpateBulkUser,(state,{users})=>(userAdaptor.updateMany(users,state)))
+
 )

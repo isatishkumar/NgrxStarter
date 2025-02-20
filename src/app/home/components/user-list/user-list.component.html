@@ -33,14 +33,14 @@
        <ng-container matColumnDef="name">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
         <td mat-cell *matCellDef="let user">
-          <ng-container *ngIf="(editingUserId$ | async) !== user.id; else nameEdit">
+          <ng-container *ngIf="(editingUserId$ | async) !== user.id || !editingBulkuser; else nameEdit">
             {{user.name}}
           </ng-container>
           <ng-template #nameEdit>
-            <ng-container [formGroup]="editForm">
+            <ng-container [formGroup]="getFormGroupById(user.id)">
               <mat-form-field appearance="outline" class="w-full">
                 <input matInput formControlName="name">
-                <mat-error *ngIf="editForm.get('name')?.touched && editForm.get('name')?.errors?.['required']"> Name is required</mat-error>
+                <mat-error *ngIf="getFormGroupById(user.id).get('name')?.touched && getFormGroupById(user.id).get('name')?.errors?.['required']"> Name is required</mat-error>
               </mat-form-field>
             </ng-container>
           </ng-template>
@@ -51,14 +51,14 @@
        <ng-container matColumnDef="username">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Username</th>
         <td mat-cell *matCellDef="let user">
-          <ng-container *ngIf="(editingUserId$ | async) !== user.id; else userNameEdit">
+          <ng-container *ngIf="(editingUserId$ | async) !== user.id || !editingBulkuser;  else userNameEdit">
             {{user.username}}
           </ng-container>
           <ng-template #userNameEdit>
-            <ng-container [formGroup]="editForm">
+            <ng-container [formGroup]="getFormGroupById(user.id)">
               <mat-form-field appearance="outline" class="w-full">
                 <input matInput formControlName="username">
-                <mat-error *ngIf="editForm.get('username')?.touched && editForm.get('username')?.errors?.['required']"> Username is required</mat-error>
+                <mat-error *ngIf="getFormGroupById(user.id).get('username')?.touched && getFormGroupById(user.id).get('username')?.errors?.['required']"> Username is required</mat-error>
               </mat-form-field>
             </ng-container>
           </ng-template>
@@ -68,15 +68,15 @@
        <ng-container matColumnDef="email">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Email</th>
         <td mat-cell *matCellDef="let user">
-          <ng-container *ngIf="(editingUserId$ | async) !== user.id; else mailEdit">
+          <ng-container *ngIf="(editingUserId$ | async) !== user.id || !editingBulkuser; else mailEdit">
             {{user.email}}
           </ng-container>
           <ng-template #mailEdit>
-            <ng-container [formGroup]="editForm">
+            <ng-container [formGroup]="getFormGroupById(user.id)">
               <mat-form-field appearance="outline" class="w-full">
                 <input matInput formControlName="email">
-                <mat-error *ngIf="editForm.get('email')?.touched && editForm.get('email')?.errors?.['required']"> Name is required</mat-error>
-                <mat-error *ngIf="editForm.get('email')?.touched && editForm.get('email')?.errors?.['email']"> Invalid email format</mat-error>
+                <mat-error *ngIf="getFormGroupById(user.id).get('email')?.touched && getFormGroupById(user.id).get('email')?.errors?.['required']"> Name is required</mat-error>
+                <mat-error *ngIf="getFormGroupById(user.id).get('email')?.touched && getFormGroupById(user.id).get('email')?.errors?.['email']"> Invalid email format</mat-error>
               </mat-form-field>
             </ng-container>
           </ng-template>
@@ -133,3 +133,8 @@
 
 
 </div>
+
+<footer>
+  <button mat-button (click)="startEditAll()">Edit all</button>
+  <button mat-button (click)="saveAll()">Save all</button>
+</footer>
